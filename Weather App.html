@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url('https://ik.imagekit.io/demo/img/image10.jpeg?tr=w-1200,h-800') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .search {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+
+        #city-input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 20px 0 0 20px;
+            outline: none;
+        }
+
+        #search-btn {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #search-btn:hover {
+            background-color: #45a049;
+        }
+
+        .weather-info {
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .weather-icon {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+
+        .temperature {
+            font-size: 3rem;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .description {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-transform: capitalize;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+        }
+
+        .detail {
+            text-align: center;
+        }
+
+        .detail img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .temperature {
+                font-size: 2.5rem;
+            }
+
+            .description {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Global Weather App</h1>
+        <div class="search">
+            <input type="text" id="city-input" placeholder="Enter city name">
+            <button id="search-btn">Search</button>
+        </div>
+        <div class="weather-info">
+            <img src="C:\Users\user\OneDrive\Pictures\New folder\770b805d5c99c7931366c2e84e88f251.png" alt="Weather Icon" class="weather-icon">
+            <div class="temperature"></div>
+            <div class="description"></div>
+            <div class="details">
+                <div class="detail">
+                    <img src="https://img.icons8.com/ios/50/ffffff/humidity.png" alt="Humidity">
+                    <div class="humidity"></div>
+                </div>
+                <div class="detail">
+                    <img src="https://img.icons8.com/ios/50/ffffff/wind--v1.png" alt="Wind">
+                    <div class="wind"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = '4bc5be9302ff2767754af50ed3327459'; // Replace with your OpenWeatherMap API key
+        const cityInput = document.getElementById('city-input');
+        const searchBtn = document.getElementById('search-btn');
+        const weatherIcon = document.querySelector('.weather-icon');
+        const temperature = document.querySelector('.temperature');
+        const description = document.querySelector('.description');
+        const humidity = document.querySelector('.humidity');
+        const wind = document.querySelector('.wind');
+
+        searchBtn.addEventListener('click', () => {
+            getWeather(cityInput.value);
+        });
+
+        cityInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                getWeather(cityInput.value);
+            }
+        });
+
+        function getWeather(city) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    weatherIcon.src = `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+                    temperature.textContent = `${Math.round(data.main.temp)}°C`;
+                    description.textContent = data.weather[0].description;
+                    humidity.textContent = `Humidity: ${data.main.humidity}%`;
+                    wind.textContent = `Wind: ${data.wind.speed} m/s`;
+                })
+                .catch(error => {
+                    console.error('Error fetching weather data:', error);
+                    alert('Error fetching weather data. Please try again.');
+                });
+        }
+
+        // Get user's location on page load
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            cityInput.value = data.name;
+                            getWeather(data.name);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching weather data:', error);
+                        });
+                }, error => {
+                    console.error('Error getting user location:', error);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
